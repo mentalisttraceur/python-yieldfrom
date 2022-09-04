@@ -19,7 +19,7 @@ with
 """
 
 
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 __all__ = ('yield_from',)
 
 
@@ -129,3 +129,10 @@ class yield_from(object):
 
         self._next = throw, (type, exception, traceback)
         return True
+
+
+# Portability to some minimal Python implementations:
+try:
+    yield_from.__name__
+except AttributeError:
+    yield_from.__name__ = 'yield_from'

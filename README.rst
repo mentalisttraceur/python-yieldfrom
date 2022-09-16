@@ -64,15 +64,17 @@ Portability
 Portable to all releases of Python 3, and releases
 of Python 2 starting with 2.6.
 
-On older or more minimal Pythons, the code will still import, and
-should work so long as the following are available or polyfilled:
+On older or more minimal Pythons, the code will still import, so
+long as the right variant of the module file was chosen (because
+Python below 2.6 did not have ``except ... as ...`` syntax), and
+should work so long as the following are built-in or polyfilled:
 
-1. The ``next`` built-in function (just the one-argument form)
+1. The ``next`` function (just the one-argument form)
    (added in Python 2.6).
-2. The ``GeneratorExit`` built-in exception (added in Python 2.5).
-3. The ``iter`` built-in function (just the one-argument form)
+2. The ``GeneratorExit`` exception (added in Python 2.5).
+3. The ``iter`` function (just the one-argument form)
    (added in Python 2.2).
-4. The ``StopIteration`` built-in exception (added in Python 2.2).
+4. The ``StopIteration`` exception (added in Python 2.2).
 
 As you go lower, especially below 2.2, you will run into the problem
 of the language itself not implementing the same interfaces that are
@@ -84,4 +86,4 @@ faithfully implemented in this module, because:
 * the iterator protocol was only added in Python 2.1.
 
 But, so long as you have objects which implement those interfaces,
-this module lets you get ``yield from`` behavior with them.
+this module should help you get ``yield from`` behavior with them.

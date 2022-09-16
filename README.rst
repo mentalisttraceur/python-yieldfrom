@@ -44,6 +44,19 @@ Replace ``yield from ...`` with:
             if not handle_throw(*sys.exc_info()):
                 raise
 
+Replace ``result = yield from ...`` with:
+
+.. code:: python
+
+    wrapper = yield_from(...)
+    for value, handle_send, handle_throw in wrapper:
+        try:
+            handle_send(yield value)
+        except:
+            if not handle_throw(*sys.exc_info()):
+                raise
+    result = wrapper.result
+
 
 Portability
 -----------

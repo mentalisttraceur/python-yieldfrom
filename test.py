@@ -1,4 +1,4 @@
-from sys import exc_info
+from sys import exc_info, version_info
 
 from yieldfrom import yield_from
 
@@ -78,8 +78,44 @@ def test_close():
         pass
 
 
+generator_return = 'return'
+if version_info < (3, 3):
+    generator_return = 'raise StopIteration'
+
+exec('''
+def returning_generator():
+    yield 1
+    yield 2
+    yield 3
+    '''+generator_return+'''(123)
+
+
+def delegating_returning_generator():
+    wrapper = yield_from(returning_generator())
+    for v, s, t in wrapper:
+        try:
+            s((yield v))
+        except:
+            if not t(*exc_info()):
+                raise
+    '''+generator_return+'''(wrapper.result)
+''')
+
+
+def test_return():
+    generator_instance = delegating_returning_generator()
+    assert next(generator_instance) == 1
+    assert next(generator_instance) == 2
+    assert next(generator_instance) == 3
+    try:
+        next(generator_instance)
+    except StopIteration as stop:
+        assert stop.args[0] == 123
+
+
 if __name__ == '__main__':
     test_yield()
     test_send()
     test_throw()
     test_close()
+    test_return()

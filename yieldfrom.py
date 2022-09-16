@@ -16,17 +16,32 @@ with
         except:
             if not handle_throw(*sys.exc_info()):
                 raise
+
+and
+
+    result = yield from ...
+
+with
+
+    wrapper = yield_from(...)
+    for value, handle_send, handle_throw in wrapper:
+        try:
+            handle_send(yield value)
+        except:
+            if not handle_throw(*sys.exc_info()):
+                raise
+    result = wrapper.result
 """
 
 
-__version__ = '1.0.2'
+__version__ = '1.1.0'
 __all__ = ('yield_from',)
 
 
 class yield_from(object):
     """Implementation of the logic that ``yield from`` adds around ``yield``."""
 
-    __slots__ = ('_iterator', '_next', '_default_next')
+    __slots__ = ('_iterator', '_next', '_default_next', 'result')
 
     def __init__(self, iterable):
         """Initializes the yield_from instance.
@@ -58,13 +73,21 @@ class yield_from(object):
         Raises:
             StopIteration: If the iterator is exhausted.
             Any: If the iterator raises an error.
+
+        Mutates:
+            self.result: Set to the result of the ``yield from`` if
+                the wrapped iterator is exhausted by this iteration.
         """
         # Mutates:
         #     self._next: Resets to default, in case handle_send
         #         or handle_throw changed it for this iteration.
         next_, arguments = self._next
         self._next = self._default_next
-        value = next_(*arguments)
+        try:
+            value = next_(*arguments)
+        except StopIteration as stop:
+            self.result = _yield_from_value(stop)
+            raise
         return value, self.handle_send, self.handle_throw
 
     next = __next__  # Python 2 used `next` instead of ``__next__``
@@ -129,6 +152,27 @@ class yield_from(object):
 
         self._next = throw, (type, exception, traceback)
         return True
+
+
+def _yield_from_value(exception):
+    """Get the ``yield from`` return value from a StopIteration instance.
+
+    Arguments:
+        exception: An instance of StopIteration.
+
+    Returns:
+        Any: The value carried by the StopIteration instances. This is
+             normally exception.value, but if that attribute is not
+             available this function will return exception.args[0], or
+             None if the exception also has no arguments.
+    """
+    try:
+        return exception.value
+    except AttributeError:
+        try:
+            return exception.args[0]
+        except IndexError:
+            return None
 
 
 # Portability to some minimal Python implementations:

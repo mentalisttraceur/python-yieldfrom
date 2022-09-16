@@ -50,7 +50,7 @@ class yield_from(object):
         return self
 
     def __next__(self):
-        """Execute the next iteration of ``yield from`` on the iterator.
+        """Do the next iteration of ``yield from`` on the wrapped iterator.
 
         Returns:
             Any: The next value from the iterator.
@@ -60,7 +60,7 @@ class yield_from(object):
             Any: If the iterator raises an error.
         """
         # Mutates:
-        #     self._next: Resets to default, in case handle_send or
+        #     self._next: Resets to default, in case handle_send
         #         or handle_throw changed it for this iteration.
         next_, arguments = self._next
         self._next = self._default_next

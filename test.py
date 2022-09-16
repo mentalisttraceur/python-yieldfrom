@@ -29,6 +29,7 @@ def delegating_generator(state=None):
             if not t(*exc_info()):
                 raise
 
+
 def test_yield():
     assert list(generator()) == list(delegating_generator())
 
@@ -81,3 +82,4 @@ if __name__ == '__main__':
     test_yield()
     test_send()
     test_throw()
+    test_close()

@@ -38,11 +38,13 @@ Replace ``yield from ...`` with:
 .. code:: python
 
     for value, handle_send, handle_throw in yield_from(...):
+        sent = None
         try:
-            handle_send(yield value)
+            sent = yield value
         except:
             if not handle_throw(*sys.exc_info()):
                 raise
+        handle_send(sent)
 
 Replace ``result = yield from ...`` with:
 
@@ -50,11 +52,13 @@ Replace ``result = yield from ...`` with:
 
     wrapper = yield_from(...)
     for value, handle_send, handle_throw in wrapper:
+        sent = None
         try:
-            handle_send(yield value)
+            sent = yield value
         except:
             if not handle_throw(*sys.exc_info()):
                 raise
+        handle_send(sent)
     result = wrapper.result
 
 

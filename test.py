@@ -22,12 +22,14 @@ def generator(state=None):
 
 
 def delegating_generator(state=None):
-    for v, s, t in yield_from(generator(state)):
+    for value, handle_send, handle_throw in yield_from(generator(state)):
+        sent = None
         try:
-            s((yield v))
+            sent = yield value
         except:
-            if not t(*exc_info()):
+            if not handle_throw(*exc_info()):
                 raise
+        handle_send(sent)
 
 
 def test_yield():

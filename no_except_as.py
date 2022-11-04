@@ -11,11 +11,13 @@ to be portable to minimal or old Pythons to replace
 with
 
     for value, handle_send, handle_throw in yield_from(...):
+        sent = None
         try:
-            handle_send(yield value)
+            sent = yield value
         except:
             if not handle_throw(*sys.exc_info()):
                 raise
+        handle_send(sent)
 
 and
 
@@ -25,16 +27,18 @@ with
 
     wrapper = yield_from(...)
     for value, handle_send, handle_throw in wrapper:
+        sent = None
         try:
-            handle_send(yield value)
+            sent = yield value
         except:
             if not handle_throw(*sys.exc_info()):
                 raise
+        handle_send(sent)
     result = wrapper.result
 """
 
 
-__version__ = '1.1.0'
+__version__ = '1.1.1'
 __all__ = ('yield_from',)
 
 

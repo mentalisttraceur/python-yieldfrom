@@ -54,6 +54,7 @@ class yield_from(object):
             iterable: The iterable to yield from and forward to.
         """
         # Mutates:
+        #     self._iterator: The result of iter(iterable).
         #     self._next: Prepares to use built-in function next in __next__
         #         for the first iteration on the iterator.
         #     self._default_next: Saves initial self._next tuple for reuse.
@@ -94,7 +95,7 @@ class yield_from(object):
             raise
         return value, self.handle_send, self.handle_throw
 
-    next = __next__  # Python 2 used `next` instead of ``__next__``
+    next = __next__  # Python 2 used ``next`` instead of ``__next__``.
 
     def handle_send(self, value):
         """Handle a send method call for a yield.

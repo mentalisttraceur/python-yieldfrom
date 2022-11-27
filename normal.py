@@ -38,7 +38,7 @@ with
 """
 
 
-__version__ = '1.2.0'
+__version__ = '2.0.0-a0'
 __all__ = ('yield_from',)
 
 
@@ -128,13 +128,14 @@ class yield_from(object):
         if value is not None:
             self._next = self._iterator.send, (value,)
 
-    def handle_throw(self, type, exception, traceback):
+    def handle_throw(self, exception_type, exception, traceback):
         """Handle a throw method call for a yield.
 
         Arguments:
-            type: The type of the exception thrown through the yield.
-                If this is GeneratorExit, the iterator will be closed
-                by callings its close attribute if it has one.
+            exception_type: The type of the exception thrown through the yield.
+                If this is GeneratorExit or an instance of GeneratorExit,
+                the iterator will be closed by callings its close attribute
+                if it has one.
             exception: The exception thrown through the yield.
             traceback: The traceback of the exception thrown through the yield.
 
@@ -146,7 +147,6 @@ class yield_from(object):
                 either be handled or bubble up at that time.
 
         Raises:
-            TypeError: If type is not a class.
             Any: If raised by the close function on the iterator.
         """
         # Mutates:
@@ -156,7 +156,13 @@ class yield_from(object):
         #         iteration of __next__.
         iterator = self._iterator
 
-        if issubclass(type, GeneratorExit):
+        # For calls which just pass arguments from ``sys.exc_info()``,
+        # exception_type will always actually be a type, but instances
+        # of GeneratorExit are tolerated in a way that matches native
+        # Python behavior to reduce surprises versus ``.throw`` and as
+        # a convenience for callers who are forwarding arguments from
+        # their own ``.throw`` method:
+        if _is_generator_exit(exception_type):
             try:
                 close = iterator.close
             except AttributeError:
@@ -169,7 +175,7 @@ class yield_from(object):
         except AttributeError:
             return False
 
-        self._next = throw, (type, exception, traceback)
+        self._next = throw, (exception_type, exception, traceback)
         return True
 
     def __getstate__(self):
@@ -229,6 +235,20 @@ def _yield_from_value(exception):
             return exception.args[0]
         except IndexError:
             return None
+
+
+def _is_generator_exit(exception):
+    """Check if the exception being given to ``yield from`` is GeneratorExit.
+
+    Arguments:
+        exception: An instance or type of exception.
+
+    Returns:
+        bool: Whether the exception matched GeneratorExit.
+    """
+    if isinstance(exception, GeneratorExit):
+        return True
+    return isinstance(exception, type) and issubclass(exception, GeneratorExit)
 
 
 # Portability to some minimal Python implementations:

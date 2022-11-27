@@ -38,7 +38,7 @@ with
 """
 
 
-__version__ = '1.1.1'
+__version__ = '1.1.2'
 __all__ = ('yield_from',)
 
 
@@ -132,7 +132,6 @@ class yield_from(object):
 
         Raises:
             TypeError: If type is not a class.
-            GeneratorExit: Re-raised after successfully closing the iterator.
             Any: If raised by the close function on the iterator.
         """
         # Mutates:

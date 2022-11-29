@@ -80,14 +80,13 @@ should work so long as the following are built-in or polyfilled:
    (added in Python 2.2).
 4. The ``StopIteration`` exception (added in Python 2.2).
 
-As you go lower, especially below 2.2, you will run into the problem
-of the language itself not implementing the same interfaces that are
-faithfully implemented in this module, because:
+But as you go lower you will run into bigger problems:
 
 * generators only gained the ability to move data bidirectionally,
   and the ``.send`` and ``.throw`` methods to do so, in Python 2.5,
-* generators and ``yield`` were only added in Python 2.2, and
-* the iterator protocol was only added in Python 2.1.
+* generators and ``yield`` were only added in Python 2.2 (and
+  needed a ``from __future__ import generators`` until 2.3), and
+* the iterator protocol was only added in Python 2.2.
 
 But, so long as you have objects which implement those interfaces,
 this module should help you get ``yield from`` behavior with them.

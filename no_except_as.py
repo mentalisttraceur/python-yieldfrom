@@ -38,8 +38,8 @@ with
 """
 
 
-__version__ = '2.0.0-a0'
-__all__ = ('yield_from',)
+__version__ = '2.0.0-a1'
+__all__ = ('yield_from', 'stop_iteration_value')
 
 
 try:
@@ -113,7 +113,7 @@ class yield_from(object):
         try:
             value = next_(*arguments)
         except StopIteration, stop:
-            self.result = _yield_from_value(stop)
+            self.result = stop_iteration_value(stop)
             raise
         return value, self.handle_send, self.handle_throw
 
@@ -223,8 +223,8 @@ class yield_from(object):
             pass
 
 
-def _yield_from_value(exception):
-    """Get the ``yield from`` return value from a StopIteration instance.
+def stop_iteration_value(exception):
+    """Get the generator "return" value from a StopIteration instance.
 
     Arguments:
         exception: An instance of StopIteration.

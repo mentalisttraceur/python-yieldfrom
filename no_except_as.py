@@ -38,8 +38,22 @@ with
 """
 
 
-__version__ = '1.2.0'
+__version__ = '1.2.1'
 __all__ = ('yield_from',)
+
+
+class _OldStyleClass:
+    pass
+
+
+_OldStyleClassInstance = type(_OldStyleClass())
+del _OldStyleClass
+
+
+def _next(iterator):
+    if isinstance(iterator, _OldStyleClassInstance):
+        return iterator.next()
+    return type(iterator).next(iterator)
 
 
 class yield_from(object):
@@ -55,11 +69,11 @@ class yield_from(object):
         """
         # Mutates:
         #     self._iterator: Holds the iterator from iter(iterable).
-        #     self._next: Prepares to use built-in function next in __next__
+        #     self._next: Prepares to use the iterator's next method
         #         for the first iteration on the iterator.
         #     self._default_next: Saves initial self._next tuple for reuse.
         self._iterator = iter(iterable)
-        self._next = self._default_next = next, (self._iterator,)
+        self._next = self._default_next = _next, (self._iterator,)
 
     def __repr__(self):
         """Represent the yield_from instance as an unambiguous string."""
@@ -123,8 +137,8 @@ class yield_from(object):
         """
         # Mutates:
         #     self._next: If value is not None, prepares to use the
-        #         iterator's send attribute instead of the built-in
-        #         function next in the next iteration of __next__.
+        #         iterator's send attribute instead of its next
+        #         method in the next iteration of __next__.
         if value is not None:
             self._next = self._iterator.send, (value,)
 
@@ -152,7 +166,7 @@ class yield_from(object):
         # Mutates:
         #     self._next: If type was not GeneratorExit and the iterator
         #         has a throw attribute, prepares to use that attribute
-        #         instead of the built-in function next in the next
+        #         instead of the iterator's next method in the next
         #         iteration of __next__.
         iterator = self._iterator
 

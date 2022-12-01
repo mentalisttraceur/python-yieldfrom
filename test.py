@@ -2,7 +2,12 @@ from copy import copy
 from itertools import count
 from sys import exc_info, version_info
 
-from yieldfrom import yield_from
+from yieldfrom import yield_from, stop_iteration_value
+
+
+def test_stop_iteration_value():
+    assert stop_iteration_value(StopIteration()) is None
+    assert stop_iteration_value(StopIteration('foo')) == 'foo'
 
 
 class _TestException(Exception):

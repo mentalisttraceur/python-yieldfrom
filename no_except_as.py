@@ -42,6 +42,13 @@ __version__ = '2.0.0-a0'
 __all__ = ('yield_from',)
 
 
+try:
+    next
+except NameError:
+    def next(iterator):
+        return iterator.next()
+
+
 class yield_from(object):
     """Implementation of the logic that ``yield from`` adds around ``yield``."""
 

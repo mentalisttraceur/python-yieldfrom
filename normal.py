@@ -48,7 +48,7 @@ class yield_from(object):
     __slots__ = ('_iterator', '_next', '_default_next', 'result')
 
     def __init__(self, iterable):
-        """Initializes the yield_from instance.
+        """Initialize the yield_from instance.
 
         Arguments:
             iterable: The iterable to yield from and forward to.

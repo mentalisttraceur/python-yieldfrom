@@ -38,7 +38,7 @@ with
 """
 
 
-__version__ = '1.1.3'
+__version__ = '1.1.4'
 __all__ = ('yield_from',)
 
 
@@ -62,8 +62,23 @@ class yield_from(object):
         self._next = self._default_next = next, (self._iterator,)
 
     def __repr__(self):
-        """Represent the yield_from instance as a string."""
-        return type(self).__name__ + '(' + repr(self._iterator) + ')'
+        """Represent the yield_from instance as an unambiguous string."""
+        name = type(self).__name__
+        iterator = repr(self._iterator)
+        if self._next is not self._default_next:
+            next_ = ' next=' + repr(self._next)
+        else:
+            next_ = ''
+        try:
+            result = self.result
+            finished = True
+        except AttributeError:
+            finished = False
+        if finished:
+            result = ' result=' + repr(result)
+        else:
+            result = ''
+        return '<' + name + ' ' + iterator + next_ + result + '>'
 
     def __iter__(self):
         """Return the yield_from instance, which is itself an iterator."""

@@ -115,9 +115,74 @@ def test_return():
         assert stop.args[0] == 123
 
 
+def test_repr():
+    def g():
+        yield
+    instance = yield_from(g())
+    basic_repr = repr(instance)
+    repr_set = {basic_repr}
+
+    next(instance)
+    assert repr(instance) == basic_repr
+    instance.handle_send(None)
+    assert repr(instance) == basic_repr
+
+    instance.handle_send(0)
+    send_pending_repr = repr(instance)
+    assert send_pending_repr not in repr_set
+    repr_set.add(send_pending_repr)
+
+    instance.handle_send(1)
+    different_send_pending_repr = repr(instance)
+    assert different_send_pending_repr not in repr_set
+    repr_set.add(different_send_pending_repr)
+
+    instance.handle_throw(KeyError, None, None)
+    throw_pending_repr = repr(instance)
+    assert throw_pending_repr not in repr_set
+    repr_set.add(throw_pending_repr)
+
+    instance.handle_throw(ValueError, None, None)
+    different_throw_pending_repr = repr(instance)
+    assert different_throw_pending_repr not in repr_set
+    repr_set.add(different_throw_pending_repr)
+
+    instance._next = instance._default_next
+
+    try:
+        next(instance)
+        assert False, 'next() should have raised'
+    except StopIteration:
+        pass
+    basic_with_result = repr(instance)
+    assert basic_with_result not in repr_set
+    repr_set.add(basic_with_result)
+
+    instance.handle_send(0)
+    send_pending_with_result = repr(instance)
+    assert send_pending_with_result not in repr_set
+    repr_set.add(send_pending_with_result)
+
+    instance.handle_send(1)
+    different_send_pending_with_result = repr(instance)
+    assert different_send_pending_with_result not in repr_set
+    repr_set.add(different_send_pending_with_result)
+
+    instance.handle_throw(KeyError, None, None)
+    throw_pending_with_result = repr(instance)
+    assert throw_pending_with_result not in repr_set
+    repr_set.add(throw_pending_with_result)
+
+    instance.handle_throw(ValueError, None, None)
+    different_throw_pending_with_result = repr(instance)
+    assert different_throw_pending_with_result not in repr_set
+    repr_set.add(different_throw_pending_with_result)
+
+
 if __name__ == '__main__':
     test_yield()
     test_send()
     test_throw()
     test_close()
     test_return()
+    test_repr()

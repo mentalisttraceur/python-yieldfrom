@@ -1,3 +1,5 @@
+from copy import copy
+from itertools import count
 from sys import exc_info, version_info
 
 from yieldfrom import yield_from
@@ -198,6 +200,72 @@ def test_repr():
     repr_set.add(different_throw_pending_with_result)
 
 
+def test_get_set_state_without_result():
+    instance = yield_from(count(start=1))
+    assert copy(instance)._next == instance._next
+    assert copy(instance)._iterator == instance._iterator
+    assert copy(instance)._default_next == instance._default_next
+
+
+def test_get_set_state_with_result():
+    class I(object):
+        def __iter__(self):
+            return self
+        def __next__(self):
+            raise StopIteration('boom')
+        next = __next__  # for Python 2
+    instance = yield_from(I())
+    try:
+        next(instance)
+        assert False, 'next() should have raised StopIteration'
+    except StopIteration:
+        pass
+    assert copy(instance)._next == instance._next
+    assert copy(instance)._iterator == instance._iterator
+    assert copy(instance)._default_next == instance._default_next
+    assert copy(instance).result == instance.result
+
+
+def test_get_set_state_preserves_send():
+    class I(object):
+        def __init__(self):
+            self.state = 'initial'
+        def __iter__(self):
+            return self
+        def __next__(self):
+            return 'from next'
+        next = __next__  # for Python 2
+        def send(self, value):
+            self.state = value
+            return 'from send'
+    iterator = I()
+    instance = yield_from(iterator)
+    instance.handle_send('sent')
+    assert iterator.state == 'initial'
+    assert next(copy(instance))[0] == 'from send'
+    assert iterator.state == 'sent'
+
+
+def test_get_set_state_preserves_throw():
+    class I(object):
+        def __init__(self):
+            self.state = 'initial'
+        def __iter__(self):
+            return self
+        def __next__(self):
+            return 'from next'
+        next = __next__  # for Python 2
+        def throw(self, exception_type, exception=None, traceback=None):
+            self.state = exception_type
+            return 'from throw'
+    iterator = I()
+    instance = yield_from(iterator)
+    instance.handle_throw(KeyError, None, None)
+    assert iterator.state == 'initial'
+    assert next(copy(instance))[0] == 'from throw'
+    assert iterator.state == KeyError
+
+
 if __name__ == '__main__':
     test_yield()
     test_send()
@@ -206,3 +274,7 @@ if __name__ == '__main__':
     test_return()
     test_no_result_until_done()
     test_repr()
+    test_get_set_state_without_result()
+    test_get_set_state_with_result()
+    test_get_set_state_preserves_send()
+    test_get_set_state_preserves_throw()

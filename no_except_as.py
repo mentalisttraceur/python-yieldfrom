@@ -38,7 +38,7 @@ with
 """
 
 
-__version__ = '1.1.4'
+__version__ = '1.2.0'
 __all__ = ('yield_from',)
 
 
@@ -171,6 +171,43 @@ class yield_from(object):
 
         self._next = throw, (type, exception, traceback)
         return True
+
+    def __getstate__(self):
+        """Gets the state of this yield_from instance.
+
+        Returns:
+            A state object that makes it possible to pickle or copy
+            this yield_from instance provided that the delegated-to
+            iterator can be pickled or copied.
+        """
+        try:
+            result = self.result
+        except AttributeError:
+            return (self._iterator, self._next, self._default_next)
+        return (self._iterator, self._next, self._default_next, result)
+
+    def __setstate__(self, state):
+        """Sets the state of this yield_from instance.
+
+        Arguments:
+            state: A state object such as returned by __getstate__.
+
+        Raises:
+            ValueError: If the state tuple is the wrong size.
+        """
+        # Mutates:
+        #     self._iterator: Restores from state.
+        #     self._next: Restores from state.
+        #     self._default_next: Restores from state.
+        #     self.result: Restores from state.
+        if len(state) > 3:
+            self._iterator, self._next, self._default_next, self.result = state
+            return
+        self._iterator, self._next, self._default_next = state
+        try:
+            del self.result
+        except AttributeError:
+            pass
 
 
 def _yield_from_value(exception):

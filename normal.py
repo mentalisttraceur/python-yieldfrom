@@ -55,8 +55,8 @@ class yield_from(object):
         """
         # Mutates:
         #     self._iterator: Holds the iterator from iter(iterable).
-        #     self._next: Prepares to use built-in function next in __next__
-        #         for the first iteration on the iterator.
+        #     self._next: Prepares to use built-in function next in
+        #         __next__ for the first iteration on the iterator.
         #     self._default_next: Saves initial self._next tuple for reuse.
         self._iterator = iter(iterable)
         self._next = self._default_next = next, (self._iterator,)

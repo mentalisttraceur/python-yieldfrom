@@ -66,25 +66,4 @@ Portability
 -----------
 
 Portable to all releases of Python 3, and releases
-of Python 2 starting with 2.5.
-
-On older or more minimal Pythons, the code will still import, so
-long as the right variant of the module file was chosen (because
-Python below 2.6 did not have ``except ... as ...`` syntax), and
-should work so long as the following are built-in or polyfilled:
-
-1. The ``GeneratorExit`` exception (added in Python 2.5).
-2. The ``iter`` function (just the one-argument form)
-   (added in Python 2.2).
-3. The ``StopIteration`` exception (added in Python 2.2).
-
-But as you go lower you will run into bigger problems:
-
-* generators only gained the ability to move data bidirectionally,
-  and the ``.send`` and ``.throw`` methods to do so, in Python 2.5,
-* generators and ``yield`` were only added in Python 2.2 (and
-  needed a ``from __future__ import generators`` until 2.3), and
-* the iterator protocol was only added in Python 2.2.
-
-But, so long as you have objects which implement those interfaces,
-this module should help you get ``yield from`` behavior with them.
+of Python 2 starting with 2.2.

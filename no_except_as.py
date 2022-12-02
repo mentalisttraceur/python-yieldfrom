@@ -44,9 +44,18 @@ __all__ = ('yield_from', 'stop_iteration_value')
 
 try:
     next
-except NameError:
+except NameError:  # for Python 2.5 and below
     def next(iterator):
         return iterator.next()
+try:
+    _BaseException = BaseException
+except NameError:  # for Python 2.4 and below
+    _BaseException = Exception
+try:
+    GeneratorExit
+except NameError:  # for some minimal Pythons, and Python 2.5 and below
+    class GeneratorExit(_BaseException):
+        pass
 
 
 class yield_from(object):

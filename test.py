@@ -115,6 +115,25 @@ def test_return():
         assert stop.args[0] == 123
 
 
+def test_no_result_until_done():
+    instance = yield_from(range(1))
+    try:
+        instance.result
+        assert False, '.result should not exist yet'
+    except AttributeError:
+        pass
+    next(instance)
+    try:
+        instance.result
+        assert False, '.result should not exist yet'
+    except AttributeError:
+        pass
+    try:
+        next(instance)
+    except StopIteration:
+        assert instance.result is None
+
+
 def test_repr():
     def g():
         yield
@@ -185,4 +204,5 @@ if __name__ == '__main__':
     test_throw()
     test_close()
     test_return()
+    test_no_result_until_done()
     test_repr()

@@ -2,7 +2,7 @@ from copy import copy
 from itertools import count
 from sys import exc_info, version_info
 
-from yieldfrom import yield_from, stop_iteration_value
+from yieldfrom import YieldFrom, stop_iteration_value
 
 
 def test_stop_iteration_value():
@@ -29,15 +29,15 @@ def generator(state=None):
 
 
 def delegating_generator(state=None):
-    wrapper = yield_from(generator(state))
-    for value in wrapper:
+    yield_from = YieldFrom(generator(state))
+    for value in yield_from:
         sent = None
         try:
             sent = yield value
         except:
-            if not wrapper.handle_throw(*exc_info()):
+            if not yield_from.handle_throw(*exc_info()):
                 raise
-        wrapper.handle_send(sent)
+        yield_from.handle_send(sent)
 
 
 def test_yield():
@@ -101,16 +101,16 @@ def returning_generator():
 
 
 def delegating_returning_generator():
-    wrapper = yield_from(returning_generator())
-    for value in wrapper:
+    yield_from = YieldFrom(returning_generator())
+    for value in yield_from:
         sent = None
         try:
             sent = yield value
         except:
-            if not wrapper.handle_throw(*exc_info()):
+            if not yield_from.handle_throw(*exc_info()):
                 raise
-        wrapper.handle_send(sent)
-    '''+generator_return+'''(wrapper.result)
+        yield_from.handle_send(sent)
+    '''+generator_return+'''(yield_from.result)
 ''')
 
 
@@ -126,93 +126,93 @@ def test_return():
 
 
 def test_no_result_until_done():
-    instance = yield_from(range(1))
+    yield_from = YieldFrom(range(1))
     try:
-        instance.result
+        yield_from.result
         assert False, '.result should not exist yet'
     except AttributeError:
         pass
-    next(instance)
+    next(yield_from)
     try:
-        instance.result
+        yield_from.result
         assert False, '.result should not exist yet'
     except AttributeError:
         pass
     try:
-        next(instance)
+        next(yield_from)
     except StopIteration:
-        assert instance.result is None
+        assert yield_from.result is None
 
 
 def test_repr():
     def g():
         yield
-    instance = yield_from(g())
-    basic_repr = repr(instance)
+    yield_from = YieldFrom(g())
+    basic_repr = repr(yield_from)
     repr_set = {basic_repr}
 
-    next(instance)
-    assert repr(instance) == basic_repr
-    instance.handle_send(None)
-    assert repr(instance) == basic_repr
+    next(yield_from)
+    assert repr(yield_from) == basic_repr
+    yield_from.handle_send(None)
+    assert repr(yield_from) == basic_repr
 
-    instance.handle_send(0)
-    send_pending_repr = repr(instance)
+    yield_from.handle_send(0)
+    send_pending_repr = repr(yield_from)
     assert send_pending_repr not in repr_set
     repr_set.add(send_pending_repr)
 
-    instance.handle_send(1)
-    different_send_pending_repr = repr(instance)
+    yield_from.handle_send(1)
+    different_send_pending_repr = repr(yield_from)
     assert different_send_pending_repr not in repr_set
     repr_set.add(different_send_pending_repr)
 
-    instance.handle_throw(KeyError, None, None)
-    throw_pending_repr = repr(instance)
+    yield_from.handle_throw(KeyError, None, None)
+    throw_pending_repr = repr(yield_from)
     assert throw_pending_repr not in repr_set
     repr_set.add(throw_pending_repr)
 
-    instance.handle_throw(ValueError, None, None)
-    different_throw_pending_repr = repr(instance)
+    yield_from.handle_throw(ValueError, None, None)
+    different_throw_pending_repr = repr(yield_from)
     assert different_throw_pending_repr not in repr_set
     repr_set.add(different_throw_pending_repr)
 
-    instance._next = instance._default_next
+    yield_from._next = yield_from._default_next
 
     try:
-        next(instance)
+        next(yield_from)
         assert False, 'next() should have raised'
     except StopIteration:
         pass
-    basic_with_result = repr(instance)
+    basic_with_result = repr(yield_from)
     assert basic_with_result not in repr_set
     repr_set.add(basic_with_result)
 
-    instance.handle_send(0)
-    send_pending_with_result = repr(instance)
+    yield_from.handle_send(0)
+    send_pending_with_result = repr(yield_from)
     assert send_pending_with_result not in repr_set
     repr_set.add(send_pending_with_result)
 
-    instance.handle_send(1)
-    different_send_pending_with_result = repr(instance)
+    yield_from.handle_send(1)
+    different_send_pending_with_result = repr(yield_from)
     assert different_send_pending_with_result not in repr_set
     repr_set.add(different_send_pending_with_result)
 
-    instance.handle_throw(KeyError, None, None)
-    throw_pending_with_result = repr(instance)
+    yield_from.handle_throw(KeyError, None, None)
+    throw_pending_with_result = repr(yield_from)
     assert throw_pending_with_result not in repr_set
     repr_set.add(throw_pending_with_result)
 
-    instance.handle_throw(ValueError, None, None)
-    different_throw_pending_with_result = repr(instance)
+    yield_from.handle_throw(ValueError, None, None)
+    different_throw_pending_with_result = repr(yield_from)
     assert different_throw_pending_with_result not in repr_set
     repr_set.add(different_throw_pending_with_result)
 
 
 def test_get_set_state_without_result():
-    instance = yield_from(count(start=1))
-    assert copy(instance)._next == instance._next
-    assert copy(instance)._iterator == instance._iterator
-    assert copy(instance)._default_next == instance._default_next
+    yield_from = YieldFrom(count(start=1))
+    assert copy(yield_from)._next == yield_from._next
+    assert copy(yield_from)._iterator == yield_from._iterator
+    assert copy(yield_from)._default_next == yield_from._default_next
 
 
 def test_get_set_state_with_result():
@@ -222,16 +222,16 @@ def test_get_set_state_with_result():
         def __next__(self):
             raise StopIteration('boom')
         next = __next__  # for Python 2
-    instance = yield_from(I())
+    yield_from = YieldFrom(I())
     try:
-        next(instance)
+        next(yield_from)
         assert False, 'next() should have raised StopIteration'
     except StopIteration:
         pass
-    assert copy(instance)._next == instance._next
-    assert copy(instance)._iterator == instance._iterator
-    assert copy(instance)._default_next == instance._default_next
-    assert copy(instance).result == instance.result
+    assert copy(yield_from)._next == yield_from._next
+    assert copy(yield_from)._iterator == yield_from._iterator
+    assert copy(yield_from)._default_next == yield_from._default_next
+    assert copy(yield_from).result == yield_from.result
 
 
 def test_get_set_state_preserves_send():
@@ -247,10 +247,10 @@ def test_get_set_state_preserves_send():
             self.state = value
             return 'from send'
     iterator = I()
-    instance = yield_from(iterator)
-    instance.handle_send('sent')
+    yield_from = YieldFrom(iterator)
+    yield_from.handle_send('sent')
     assert iterator.state == 'initial'
-    assert next(copy(instance)) == 'from send'
+    assert next(copy(yield_from)) == 'from send'
     assert iterator.state == 'sent'
 
 
@@ -267,14 +267,15 @@ def test_get_set_state_preserves_throw():
             self.state = exception_type
             return 'from throw'
     iterator = I()
-    instance = yield_from(iterator)
-    instance.handle_throw(KeyError, None, None)
+    yield_from = YieldFrom(iterator)
+    yield_from.handle_throw(KeyError, None, None)
     assert iterator.state == 'initial'
-    assert next(copy(instance)) == 'from throw'
+    assert next(copy(yield_from)) == 'from throw'
     assert iterator.state == KeyError
 
 
 if __name__ == '__main__':
+    test_stop_iteration_value()
     test_yield()
     test_send()
     test_throw()

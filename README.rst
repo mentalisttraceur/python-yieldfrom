@@ -27,32 +27,32 @@ Installation
 Usage
 -----
 
-Import ``yield_from``:
+Import ``YieldFrom``:
 
 .. code:: python
 
-    from yieldfrom import yield_from
+    from yieldfrom import YieldFrom
 
 Replace ``yield from ...`` with:
 
 .. code:: python
 
-    wrapper = yield_from(...)
-    for value in wrapper:
+    yield_from = YieldFrom(...)
+    for value in yield_from:
         sent = None
         try:
             sent = yield value
         except:
-            if not wrapper.handle_throw(*sys.exc_info()):
+            if not yield_from.handle_throw(*sys.exc_info()):
                 raise
-        wrapper.handle_send(sent)
+        yield_from.handle_send(sent)
 
 To replace ``result = yield from ...``, just
 add this right after the above loop:
 
 .. code:: python
 
-    result = wrapper.result
+    result = yield_from.result
 
 
 Portability

@@ -10,15 +10,15 @@ to be portable to minimal or old Pythons to replace
 
 with
 
-    wrapper = yield_from(...)
-    for value in wrapper:
+    yield_from = YieldFrom(...)
+    for value in yield_from:
         sent = None
         try:
             sent = yield value
         except:
-            if not wrapper.handle_throw(*sys.exc_info()):
+            if not yield_from.handle_throw(*sys.exc_info()):
                 raise
-        wrapper.handle_send(sent)
+        yield_from.handle_send(sent)
 
 and
 
@@ -26,21 +26,21 @@ and
 
 with the above followed by
 
-    result = wrapper.result
+    result = yield_from.result
 """
 
 
 __version__ = '2.0.0-a2'
-__all__ = ('yield_from', 'stop_iteration_value')
+__all__ = ('YieldFrom', 'stop_iteration_value')
 
 
-class yield_from(object):
+class YieldFrom(object):
     """Implementation of the logic that ``yield from`` adds around ``yield``."""
 
     __slots__ = ('_iterator', '_next', '_default_next', 'result')
 
     def __init__(self, iterable):
-        """Initialize the yield_from instance.
+        """Initialize the YieldFrom instance.
 
         Arguments:
             iterable: The iterable to yield from and forward to.
@@ -54,7 +54,7 @@ class yield_from(object):
         self._next = self._default_next = next, (self._iterator,)
 
     def __repr__(self):
-        """Represent the yield_from instance as an unambiguous string."""
+        """Represent the YieldFrom instance as an unambiguous string."""
         name = type(self).__name__
         iterator = repr(self._iterator)
         if self._next is not self._default_next:
@@ -73,7 +73,7 @@ class yield_from(object):
         return '<' + name + ' ' + iterator + next_ + result + '>'
 
     def __iter__(self):
-        """Return the yield_from instance, which is itself an iterator."""
+        """Return the YieldFrom instance, which is itself an iterator."""
         return self
 
     def __next__(self):
@@ -171,11 +171,11 @@ class yield_from(object):
         return True
 
     def __getstate__(self):
-        """Gets the state of this yield_from instance.
+        """Gets the state of this YieldFrom instance.
 
         Returns:
             A state object that makes it possible to pickle or copy
-            this yield_from instance provided that the delegated-to
+            this YieldFrom instance provided that the delegated-to
             iterator can be pickled or copied.
         """
         try:
@@ -185,7 +185,7 @@ class yield_from(object):
         return (self._iterator, self._next, self._default_next, result)
 
     def __setstate__(self, state):
-        """Sets the state of this yield_from instance.
+        """Sets the state of this YieldFrom instance.
 
         Arguments:
             state: A state object such as returned by __getstate__.
@@ -245,6 +245,6 @@ def _is_generator_exit(exception):
 
 # Portability to some minimal Python implementations:
 try:
-    yield_from.__name__
+    YieldFrom.__name__
 except AttributeError:
-    yield_from.__name__ = 'yield_from'
+    YieldFrom.__name__ = 'YieldFrom'

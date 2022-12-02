@@ -29,14 +29,15 @@ def generator(state=None):
 
 
 def delegating_generator(state=None):
-    for value, handle_send, handle_throw in yield_from(generator(state)):
+    wrapper = yield_from(generator(state))
+    for value in wrapper:
         sent = None
         try:
             sent = yield value
         except:
-            if not handle_throw(*exc_info()):
+            if not wrapper.handle_throw(*exc_info()):
                 raise
-        handle_send(sent)
+        wrapper.handle_send(sent)
 
 
 def test_yield():
@@ -101,12 +102,14 @@ def returning_generator():
 
 def delegating_returning_generator():
     wrapper = yield_from(returning_generator())
-    for v, s, t in wrapper:
+    for value in wrapper:
+        sent = None
         try:
-            s((yield v))
+            sent = yield value
         except:
-            if not t(*exc_info()):
+            if not wrapper.handle_throw(*exc_info()):
                 raise
+        wrapper.handle_send(sent)
     '''+generator_return+'''(wrapper.result)
 ''')
 
@@ -247,7 +250,7 @@ def test_get_set_state_preserves_send():
     instance = yield_from(iterator)
     instance.handle_send('sent')
     assert iterator.state == 'initial'
-    assert next(copy(instance))[0] == 'from send'
+    assert next(copy(instance)) == 'from send'
     assert iterator.state == 'sent'
 
 
@@ -267,7 +270,7 @@ def test_get_set_state_preserves_throw():
     instance = yield_from(iterator)
     instance.handle_throw(KeyError, None, None)
     assert iterator.state == 'initial'
-    assert next(copy(instance))[0] == 'from throw'
+    assert next(copy(instance)) == 'from throw'
     assert iterator.state == KeyError
 
 

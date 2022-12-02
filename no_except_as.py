@@ -10,35 +10,27 @@ to be portable to minimal or old Pythons to replace
 
 with
 
-    for value, handle_send, handle_throw in yield_from(...):
+    wrapper = yield_from(...)
+    for value in wrapper:
         sent = None
         try:
             sent = yield value
         except:
-            if not handle_throw(*sys.exc_info()):
+            if not wrapper.handle_throw(*sys.exc_info()):
                 raise
-        handle_send(sent)
+        wrapper.handle_send(sent)
 
 and
 
     result = yield from ...
 
-with
+with the above followed by
 
-    wrapper = yield_from(...)
-    for value, handle_send, handle_throw in wrapper:
-        sent = None
-        try:
-            sent = yield value
-        except:
-            if not handle_throw(*sys.exc_info()):
-                raise
-        handle_send(sent)
     result = wrapper.result
 """
 
 
-__version__ = '2.0.0-a1'
+__version__ = '2.0.0-a2'
 __all__ = ('yield_from', 'stop_iteration_value')
 
 
@@ -124,7 +116,7 @@ class yield_from(object):
         except StopIteration, stop:
             self.result = stop_iteration_value(stop)
             raise
-        return value, self.handle_send, self.handle_throw
+        return value
 
     next = __next__  # Python 2 used ``next`` instead of ``__next__``.
 

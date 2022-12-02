@@ -33,32 +33,25 @@ Import ``yield_from``:
 
     from yieldfrom import yield_from
 
-Replace ``yield from ...`` with: 
-
-.. code:: python
-
-    for value, handle_send, handle_throw in yield_from(...):
-        sent = None
-        try:
-            sent = yield value
-        except:
-            if not handle_throw(*sys.exc_info()):
-                raise
-        handle_send(sent)
-
-Replace ``result = yield from ...`` with:
+Replace ``yield from ...`` with:
 
 .. code:: python
 
     wrapper = yield_from(...)
-    for value, handle_send, handle_throw in wrapper:
+    for value in wrapper:
         sent = None
         try:
             sent = yield value
         except:
-            if not handle_throw(*sys.exc_info()):
+            if not wrapper.handle_throw(*sys.exc_info()):
                 raise
-        handle_send(sent)
+        wrapper.handle_send(sent)
+
+To replace ``result = yield from ...``, just
+add this right after the above loop:
+
+.. code:: python
+
     result = wrapper.result
 
 

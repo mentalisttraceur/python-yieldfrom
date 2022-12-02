@@ -119,7 +119,7 @@ def test_return():
     try:
         next(generator_instance)
     except StopIteration as stop:
-        assert stop.args[0] == 123
+        assert stop_iteration_value(stop) == 123
 
 
 def test_no_result_until_done():

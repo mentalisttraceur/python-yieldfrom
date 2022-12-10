@@ -1,0 +1,74 @@
+Python ``yield from`` as an Iterator
+====================================
+
+A robust implementation of ``yield from`` behavior. Good for transpilers,
+backpilers, and code that needs to be portable to minimal or old Pythons.
+
+This implementation avoids the complexity and overheads of typical
+``yield from`` backports - the tradeoff is that it is less obvious
+and does not resemble ``yield from`` syntax.
+
+
+Versioning
+----------
+
+This library's version numbers follow the `SemVer 2.0.0
+specification <https://semver.org/spec/v2.0.0.html>`_.
+
+
+Installation
+------------
+
+::
+
+    pip install yield-from-as-an-iterator
+
+
+Usage
+-----
+
+Import ``YieldFrom``:
+
+.. code:: python
+
+    from yieldfrom import YieldFrom
+
+Replace ``yield from ...`` with:
+
+.. code:: python
+
+    yield_from = YieldFrom(...)
+    for value in yield_from:
+        sent = None
+        try:
+            sent = yield value
+        except:
+            if not yield_from.handle_throw(*sys.exc_info()):
+                raise
+        yield_from.handle_send(sent)
+
+To replace ``result = yield from ...``, just
+add this right after the above loop:
+
+.. code:: python
+
+    result = yield_from.result
+
+Also, ``stop_iteration_value`` is provided as a backwards-compatible
+way of getting the "return" value from an iterator's ``StopIteration``
+exception:
+
+.. code:: python
+
+    >>> from yieldfrom import stop_iteration_value
+    >>> stop_iteration_value(StopIteration(5)) == 5
+    True
+    >>> stop_iteration_value(StopIteration()) is None
+    True
+
+
+Portability
+-----------
+
+Portable to all releases of Python 3, and releases
+of Python 2 starting with 2.2.

@@ -68,9 +68,7 @@ Portability
 Portable to all releases of Python 3, and releases
 of Python 2 starting with 2.5.
 
-On older or more minimal Pythons, the code will still import, so
-long as the right variant of the module file was chosen (because
-Python below 2.6 did not have ``except ... as ...`` syntax), and
+On older or more minimal Pythons, the code will still import, and
 should work so long as the following are built-in or polyfilled:
 
 1. The ``GeneratorExit`` exception (added in Python 2.5).
